@@ -1,7 +1,8 @@
 import paho.mqtt.client as mqtt
+import datetime
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result coe " + str(rc))
+    print("Connected with result code " + str(rc))
     client.subscribe("topic")
 
 def on_message(client, userdata, msg):
