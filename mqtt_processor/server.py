@@ -2,17 +2,23 @@ from socket import *
 
 import os
 import uuid
-
+from _thread import *
+import threading
+import paho.mqtt.client as mqtt
+import datetime
+from s3_upload import upload_to_s3
+from time import sleep
 
 serverSock = socket(AF_INET, SOCK_STREAM)
 serverSock.setsockopt(SOL_SOCKET, SO_KEEPALIVE, 1)
 serverSock.bind(('', 8110))
-serverSock.listen(1)
+serverSock.listen(10)
 serverSock.settimeout(None)
 print(serverSock.gettimeout())
 
 connectionSock, addr = serverSock.accept()
 connectionSock.settimeout(None)
+
 print(str(addr), '[Process Server] connected to this Server.')
 print(connectionSock.gettimeout())
 
@@ -23,11 +29,8 @@ f = None
 
 while True:
     data = connectionSock.recv(4096)
-    print(data)
-
     if data == b"AT+IMGEND":
         f.close()
-        os.system(f'/Users/senghyun/workspace/RawCamera-data-converter/convert -f ~/workspace/socketTest/{filename}.raw')
         connectionSock.close()
         connectionSock, addr = serverSock.accept()
 
@@ -37,4 +40,13 @@ while True:
         print("Started!")
 
     else:
+        if(data == b''):
+            connectionSock.close()
+            os.system('./convert -f '+filename+".raw")
+            sleep(2)
+            upload_to_s3(filename+".raw.png",1)
+            filename = uuid.uuid4().hex.upper()[0:6]
+            connectionSock, addr = serverSock.accept()
+
+        #print(data)
         f.write(data)

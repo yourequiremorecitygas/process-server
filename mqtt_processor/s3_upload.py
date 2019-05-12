@@ -23,5 +23,3 @@ def upload_to_s3(file_name, node_number):
             ExtraArgs={'ACL' : 'public-read-write'}
         )
     print("File Upload Complete to " + str(node_number) + "/" + file_name)
-
-upload_to_s3("A89B08.png",1)
