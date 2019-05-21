@@ -78,14 +78,14 @@ class MyThread(threading.Thread) :
         # recv File information
         filename = ""
         f = None
-
+        file_path = ""
         # communicate with client
         while (not self.__exit.is_set()) :
 
             # menu that selected by client
             choose = None
             payload = None
-        
+
             # exception handling ( when client closes TCP connection )
             try :
                 # menu that selected by client
@@ -95,20 +95,31 @@ class MyThread(threading.Thread) :
                 payload = self._connectionSocket.recv(4096)
                 if payload.find(b'AT+IMGEND') != -1:
                     f.close()
-                    """
-                    while ConverterSemapohre <= 0:
-                        sleep(1)
-
-                    ConverterSemapohre = 0
+                    
                     os.system('./convert -f '+filename+".raw")
-                    ConverterSemapohre = 1
-                    """
-                    os.system('./convert -f '+filename+".raw")
-                    upload_to_s3(filename+".raw.png",1)
+                    print(file_path)
+                    upload_to_s3(str(filename)+".raw.png",str(file_path))
 
                 elif payload.find(b"AT+IMGSTART") != -1:
-                    filename = uuid.uuid4().hex.upper()[0:6]
+
+                    print(payload)
+                    now = datetime.datetime.now()+datetime.timedelta(hours=9)
+                    filename = now.strftime('%Y-%m-%d-%H:%M:%S') + "AA"
+
                     f = open(f'{filename}.raw', 'a+b')
+
+                    payload = payload.replace(b'AT+IMGSTART;;',b'')
+                    print(payload)
+                    path_idx = payload.find(b';;')
+                    file_path = payload[:path_idx].decode('utf-8')
+
+                    print("Path_index : " + str(path_idx))
+                    print("File Path_ : " + file_path)
+                    if path_idx == -1:
+                        print("not vailid Packet.")
+                        continue
+
+                    #f.write(payload)
                     print("Started!")
 
                 elif not payload :
@@ -122,7 +133,7 @@ class MyThread(threading.Thread) :
                     f.write(payload)
 
                 payload = payload
-                print(payload[-100:])
+                #print(payload[-100:])
                 choose = payload[0]
 
                 if (choose == '') :
