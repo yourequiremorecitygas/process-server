@@ -9,3 +9,6 @@
   * Just run `MultiThreadTCPServer___.py`
   * This python script only checked on `Python 3.5.2`
   
+## AWS S3 FileUpload Module
+  * You have to change `awsinfo.json` on your account.
+  * If you don't, You can`t use it.
